@@ -4,7 +4,8 @@ pipeline {
     environment {
         PROJECT_DIR = "C:\\Users\\Dell-Lap\\Downloads\\react-hello-world-app-master\\react-hello-world-app-master"
         TOMCAT_DIR = "C:\\Program Files\\Apache Software Foundation\\Tomcat 9.0\\webapps"
-        APP_NAME = "hello-world-app"
+        APP_NAME = "hello-world-app" // The default app name
+        DEPLOY_DIR = "C:\\Users\\Dell-Lap\\Downloads\\node" // Specify the folder you want to deploy to
     }
 
     stages {
@@ -66,32 +67,17 @@ pipeline {
             }
         }
 
-        stage('Deploy to Tomcat') {
+        stage('Deploy to Custom Folder') {
             steps {
                 script {
+                    // Check if the build directory exists and contains files
                     bat "if not exist \"${PROJECT_DIR}\\build\" (echo Build directory does not exist && exit 1)"
                     bat "dir \"${PROJECT_DIR}\\build\""
                     bat "if not exist \"${PROJECT_DIR}\\build\\*\" (echo No files in build directory && exit 1)"
-                    bat "if not exist \"${TOMCAT_DIR}\\${APP_NAME}\" mkdir \"${TOMCAT_DIR}\\${APP_NAME}\""
-                    bat "xcopy /S /I /Y \"${PROJECT_DIR}\\build\\*\" \"${TOMCAT_DIR}\\${APP_NAME}\\\""
-                    bat "dir \"${TOMCAT_DIR}\\${APP_NAME}\""
-                }
-            }
-        }
-    }
 
-    post {
-        always {
-            echo 'This will always run after the pipeline finishes'
-        }
-        success {
-            echo 'Pipeline succeeded!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-        unstable {
-            echo 'Pipeline unstable!'
-        }
-    }
-}
+                    // Create the deployment directory if it does not exist
+                    bat "if not exist \"${DEPLOY_DIR}\" mkdir \"${DEPLOY_DIR}\""
+
+                    // Copy files from build directory to the specified custom directory
+                    bat "xcopy /S /I /Y \"${PROJECT_DIR}\\build\\*\" \"${DEPLOY_DIR}\\\""
+      
