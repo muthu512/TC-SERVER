@@ -80,4 +80,43 @@ pipeline {
 
                     // Copy files from build directory to the specified custom directory
                     bat "xcopy /S /I /Y \"${PROJECT_DIR}\\build\\*\" \"${DEPLOY_DIR}\\\""
-      
+                    bat "dir \"${DEPLOY_DIR}\""
+                }
+            }
+        }
+
+        stage('Deploy to Tomcat') {
+            steps {
+                script {
+                    // Check if the build directory exists and contains files
+                    bat "if not exist \"${PROJECT_DIR}\\build\" (echo Build directory does not exist && exit 1)"
+                    bat "dir \"${PROJECT_DIR}\\build\""
+                    bat "if not exist \"${PROJECT_DIR}\\build\\*\" (echo No files in build directory && exit 1)"
+
+                    // Create the Tomcat application directory if it does not exist
+                    def tomcatAppDir = "${TOMCAT_DIR}\\${APP_NAME}"
+                    bat "if not exist \"${tomcatAppDir}\" mkdir \"${tomcatAppDir}\""
+
+                    // Copy files from build directory to the Tomcat application directory
+                    bat "xcopy /S /I /Y \"${PROJECT_DIR}\\build\\*\" \"${tomcatAppDir}\\\""
+                    bat "dir \"${tomcatAppDir}\""
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'This will always run after the pipeline finishes'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+        unstable {
+            echo 'Pipeline unstable!'
+        }
+    }
+}
